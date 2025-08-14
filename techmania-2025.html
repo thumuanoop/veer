@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechMania 2025 - Event Registration Platform</title>
+    <meta name="description" content="Register for TechMania 2025 at ANITS, Visakhapatnam. Join hackathon, coding competition, or combo pass events on September 17-18, 2025.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#ec4899',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .step-indicator {
+            position: relative;
+        }
+        
+        .step-indicator::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -20px;
+            width: 40px;
+            height: 2px;
+            background: #e5e7eb;
+            transform: translateY(-50%);
+        }
+        
+        .step-indicator.active::after {
+            background: #6366f1;
+        }
+        
+        .step-indicator:last-child::after {
+            display: none;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast.success {
+            background-color: #10b981;
+        }
+        
+        .toast.error {
+            background-color: #ef4444;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(45deg, #000 25%, transparent 25%), 
+                        linear-gradient(-45deg, #000 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #000 75%), 
+                        linear-gradient(-45deg, transparent 75%, #000 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            border: 20px solid #000;
+            position: relative;
+        }
+        
+        .qr-code::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 40px;
+            height: 40px;
+            background: #000;
+            border: 10px solid #fff;
+        }
+        
+        .qr-code::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            background: #000;
+            border: 10px solid #fff;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+    
+    <!-- Main Application Container -->
+    <div id="app">
+        <!-- Navigation Header -->
+        <header class="bg-white shadow-sm border-b border-gray-100">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
+                            <i data-lucide="code" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold text-gray-900">TechMania 2025</h1>
+                            <p class="text-xs text-gray-500">ANITS, Visakhapatnam</p>
+                        </div>
+                    </div>
+                    <button id="admin-login-btn" class="text-sm text-gray-600 hover:text-primary transition-colors duration-200 flex items-center space-x-2">
+                        <i data-lucide="shield-question" class="w-4 h-4"></i>
+                        <span>Admin Login</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main id="main-content" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Hero Section -->
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">
+                    Register for TechMania 2025
+                </h2>
+                <p class="text-xl text-gray-600 mb-6">
+                    Join the ultimate tech extravaganza at ANITS, Visakhapatnam
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center items-center space-y-2 sm:space-y-0 sm:space-x-8 text-sm text-gray-700 bg-white rounded-lg p-4 shadow-sm">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="calendar" class="w-4 h-4 text-primary"></i>
+                        <span class="font-medium">September 17-18, 2025</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="map-pin" class="w-4 h-4 text-secondary"></i>
+                        <span class="font-medium">ANITS, Visakhapatnam</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event Schedule -->
+            <div class="mb-12">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">Event Schedule</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 card-hover">
+                        <h4 class="text-lg font-semibold text-primary mb-4 flex items-center">
+                            <i data-lucide="calendar" class="w-5 h-5 mr-2"></i>
+                            Day 1 - September 17
+                        </h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span class="text-gray-700">Workshop</span>
+                                <span class="text-sm font-medium text-gray-900">Morning</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-700">Hackathon Begins</span>
+                                <span class="text-sm font-medium text-gray-900">6:00 PM - 6:00 AM</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 card-hover">
+                        <h4 class="text-lg font-semibold text-secondary mb-4 flex items-center">
+                            <i data-lucide="calendar" class="w-5 h-5 mr-2"></i>
+                            Day 2 - September 18
+                        </h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                <span class="text-gray-700">Coding Competition</span>
+                                <span class="text-sm font-medium text-gray-900">9:00 AM - 1:00 PM</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2">
+                                <span class="text-gray-700">Valedictory</span>
+                                <span class="text-sm font-medium text-gray-900">2:00 PM - 4:00 PM</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Registration Form -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+                <h3 class="text-2xl font-bold text-gray-900 mb-8">Team Registration</h3>
+                
+                <!-- Step Indicators -->
+                <div class="flex items-center justify-center mb-8">
+                    <div class="flex items-center space-x-8">
+                        <div class="step-indicator active flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-semibold">1</div>
+                            <span class="text-sm font-medium">Event</span>
+                        </div>
+                        <div class="step-indicator flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-semibold">2</div>
+                            <span class="text-sm font-medium">Team Size</span>
+                        </div>
+                        <div class="step-indicator flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-semibold">3</div>
+                            <span class="text-sm font-medium">Details</span>
+                        </div>
+                        <div class="step-indicator flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-semibold">4</div>
+                            <span class="text-sm font-medium">Payment</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registration Form -->
+                <form id="registration-form">
+                    <!-- Step 1: Event Selection -->
+                    <div id="step-1" class="step-content">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-6">Select Event</h4>
+                        <div class="grid sm:grid-cols-3 gap-4 mb-6">
+                            <label class="event-option block p-6 rounded-xl border-2 border-gray-200 cursor-pointer hover:border-primary transition-all duration-200">
+                                <input type="radio" name="eventType" value="hackathon" class="sr-only">
+                                <div class="text-center">
+                                    <i data-lucide="code" class="w-8 h-8 mx-auto mb-3 text-purple-600"></i>
+                                    <h5 class="font-semibold text-gray-900 mb-2">Hackathon</h5>
+                                    <p class="text-sm text-gray-600">12-hour coding marathon</p>
+                                </div>
+                            </label>
+                            <label class="event-option block p-6 rounded-xl border-2 border-gray-200 cursor-pointer hover:border-primary transition-all duration-200">
+                                <input type="radio" name="eventType" value="coding" class="sr-only">
+                                <div class="text-center">
+                                    <i data-lucide="trophy" class="w-8 h-8 mx-auto mb-3 text-green-600"></i>
+                                    <h5 class="font-semibold text-gray-900 mb-2">Coding Competition</h5>
+                                    <p class="text-sm text-gray-600">4-hour competitive coding</p>
+                                </div>
+                            </label>
+                            <label class="event-option block p-6 rounded-xl border-2 border-gray-200 cursor-pointer hover:border-primary transition-all duration-200">
+                                <input type="radio" name="eventType" value="combo" class="sr-only">
+                                <div class="text-center">
+                                    <i data-lucide="star" class="w-8 h-8 mx-auto mb-3 text-yellow-600"></i>
+                                    <h5 class="font-semibold text-gray-900 mb-2">Combo Pass</h5>
+                                    <p class="text-sm text-gray-600">Both events included</p>
+                                </div>
+                            </label>
+                        </div>
+                        <button type="button" id="next-step-1" class="w-full bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50" disabled>
+                            Continue to Team Size
+                        </button>
+                    </div>
+
+                    <!-- Step 2: Team Size Selection -->
+                    <div id="step-2" class="step-content hidden">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-6">Team Size & Pricing</h4>
+                        <div id="pricing-grid" class="grid sm:grid-cols-4 gap-4 mb-6">
+                            <!-- Pricing options will be dynamically generated -->
+                        </div>
+                        <div class="flex space-x-4">
+                            <button type="button" id="back-step-2" class="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
+                                Back
+                            </button>
+                            <button type="button" id="next-step-2" class="flex-1 bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50" disabled>
+                                Continue to Team Details
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Team Details -->
+                    <div id="step-3" class="step-content hidden">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-6">Team Details</h4>
+                        
+                        <div class="grid sm:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Team Name *</label>
+                                <input type="text" name="teamName" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Enter your team name" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Team Lead Mobile *</label>
+                                <input type="tel" name="teamLeadPhone" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Enter mobile number" required>
+                            </div>
+                        </div>
+
+                        <div id="team-members" class="space-y-4 mb-6">
+                            <h5 class="font-medium text-gray-900">Team Members</h5>
+                            <!-- Team member fields will be dynamically generated -->
+                        </div>
+
+                        <div class="flex space-x-4">
+                            <button type="button" id="back-step-3" class="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
+                                Back
+                            </button>
+                            <button type="button" id="next-step-3" class="flex-1 bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-primary/90 transition-colors">
+                                Continue to Payment
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Payment -->
+                    <div id="step-4" class="step-content hidden">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-6">Payment</h4>
+                        
+                        <!-- Pricing Display -->
+                        <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                            <div class="flex justify-between items-center">
+                                <span class="text-lg font-semibold text-gray-900">Total Amount:</span>
+                                <span id="total-amount" class="text-2xl font-bold text-primary">₹0</span>
+                            </div>
+                            <div id="event-details" class="text-sm text-gray-600 mt-2"></div>
+                        </div>
+
+                        <div class="grid lg:grid-cols-2 gap-8 mb-6">
+                            <div class="text-center">
+                                <h5 class="font-medium text-gray-700 mb-4">Scan QR Code to Pay</h5>
+                                <div class="inline-block p-4 bg-white rounded-lg shadow-sm border">
+                                    <div class="qr-code mx-auto"></div>
+                                    <p class="text-sm text-gray-600 mt-2">Payment QR Code</p>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Transaction ID *</label>
+                                <input type="text" name="transactionId" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent mb-4" placeholder="Enter transaction ID after payment" required>
+                                
+                                <div class="text-xs text-gray-600 mb-4">
+                                    <p>• Make payment using the QR code above</p>
+                                    <p>• Enter the transaction ID you receive</p>
+                                    <p>• Click submit to complete registration</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex space-x-4">
+                            <button type="button" id="back-step-4" class="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-lg font-semibold hover:bg-gray-300 transition-colors">
+                                Back
+                            </button>
+                            <button type="submit" id="submit-registration" class="flex-1 bg-green-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-green-700 transition-colors">
+                                Submit Registration
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </main>
+
+        <!-- Admin Dashboard -->
+        <div id="admin-dashboard" class="hidden">
+            <!-- Admin Header -->
+            <header class="bg-white shadow-sm border-b border-gray-100">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between items-center h-16">
+                        <h1 class="text-xl font-bold text-gray-900">TechMania 2025 - Admin Dashboard</h1>
+                        <button id="logout-btn" class="text-gray-600 hover:text-red-500 flex items-center space-x-2">
+                            <i data-lucide="log-out" class="w-4 h-4"></i>
+                            <span>Logout</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <!-- Statistics Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-blue-100 rounded-lg">
+                                <i data-lucide="users" class="w-5 h-5 text-blue-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-600">Total Teams</p>
+                                <p id="total-teams" class="text-2xl font-bold text-gray-900">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-green-100 rounded-lg">
+                                <i data-lucide="code" class="w-5 h-5 text-green-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-600">Hackathon</p>
+                                <p id="hackathon-count" class="text-2xl font-bold text-gray-900">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-purple-100 rounded-lg">
+                                <i data-lucide="trophy" class="w-5 h-5 text-purple-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-600">Coding Competition</p>
+                                <p id="coding-count" class="text-2xl font-bold text-gray-900">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-yellow-100 rounded-lg">
+                                <i data-lucide="star" class="w-5 h-5 text-yellow-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm text-gray-600">Combo Pass</p>
+                                <p id="combo-count" class="text-2xl font-bold text-gray-900">0</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter Options -->
+                <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-100 mb-6">
+                    <div class="flex flex-wrap items-center gap-4">
+                        <div class="flex-1 min-w-64">
+                            <div class="relative">
+                                <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4"></i>
+                                <input id="search-input" type="text" placeholder="Search team name or transaction ID..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <select id="event-filter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <option value="all">All Events</option>
+                                <option value="hackathon">Hackathon</option>
+                                <option value="coding">Coding Competition</option>
+                                <option value="combo">Combo Pass</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <select id="size-filter" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                                <option value="all">All Sizes</option>
+                                <option value="1">1 Member</option>
+                                <option value="2">2 Members</option>
+                                <option value="3">3 Members</option>
+                                <option value="4">4 Members</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registrations Table -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100">
+                    <div class="px-6 py-4 border-b border-gray-100">
+                        <h3 class="text-lg font-semibold text-gray-900">Team Registrations</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Team</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Members</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction ID</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="registrations-table" class="bg-white divide-y divide-gray-200">
+                                <!-- Registration data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Success Modal -->
+        <div id="success-modal" class="modal">
+            <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="check" class="w-8 h-8 text-green-600"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Registration Successful!</h3>
+                    <p class="text-gray-600 mb-6">Your team has been successfully registered for TechMania 2025. You will receive a confirmation email shortly.</p>
+                    <button id="close-success-modal" class="w-full bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-primary/90 transition-colors">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Login Modal -->
+        <div id="admin-login-modal" class="modal">
+            <div class="bg-white rounded-xl p-8 max-w-md w-full mx-4">
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="shield-question" class="w-6 h-6 text-primary"></i>
+                        <h3 class="text-xl font-bold text-gray-900">Admin Login</h3>
+                    </div>
+                    <button id="close-admin-modal" class="text-gray-400 hover:text-gray-600">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <form id="admin-login-form">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                            <input type="text" name="username" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Enter username" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                            <input type="password" name="password" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Enter password" required>
+                        </div>
+                        <button type="submit" class="w-full bg-primary text-white py-3 px-6 rounded-lg font-semibold hover:bg-primary/90 transition-colors">
+                            Login
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-6 text-center">
+                    <p class="text-sm text-gray-600">
+                        Default credentials: admin / techmania2025
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        let currentStep = 1;
+        let formData = {};
+        let registrations = [];
+        let isAdminLoggedIn = false;
+        
+        // Pricing Configuration
+        const pricing = {
+            hackathon: { 1: 159, 2: 299, 3: 399, 4: 499 },
+            coding: { 1: 139, 2: 139, 3: 199, 4: 199 },
+            combo: { 1: 249, 2: 479, 3: 649, 4: 879 }
+        };
+
+        // Initialize Lucide Icons
+        document.addEventListener('DOMContentLoaded', function() {
+            lucide.createIcons();
+            initializeApp();
+        });
+
+        function initializeApp() {
+            setupEventListeners();
+            loadLocalData();
+        }
+
+        function setupEventListeners() {
+            // Event selection
+            document.querySelectorAll('input[name="eventType"]').forEach(radio => {
+                radio.addEventListener('change', handleEventSelection);
+            });
+
+            // Step navigation
+            document.getElementById('next-step-1').addEventListener('click', () => goToStep(2));
+            document.getElementById('back-step-2').addEventListener('click', () => goToStep(1));
+            document.getElementById('next-step-2').addEventListener('click', () => goToStep(3));
+            document.getElementById('back-step-3').addEventListener('click', () => goToStep(2));
+            document.getElementById('next-step-3').addEventListener('click', () => goToStep(4));
+            document.getElementById('back-step-4').addEventListener('click', () => goToStep(3));
+
+            // Form submission
+            document.getElementById('registration-form').addEventListener('submit', handleFormSubmission);
+
+            // Admin functionality
+            document.getElementById('admin-login-btn').addEventListener('click', showAdminLoginModal);
+            document.getElementById('close-admin-modal').addEventListener('click', hideAdminLoginModal);
+            document.getElementById('admin-login-form').addEventListener('submit', handleAdminLogin);
+            document.getElementById('logout-btn').addEventListener('click', handleLogout);
+
+            // Success modal
+            document.getElementById('close-success-modal').addEventListener('click', hideSuccessModal);
+
+            // Admin filters
+            document.getElementById('search-input').addEventListener('input', filterRegistrations);
+            document.getElementById('event-filter').addEventListener('change', filterRegistrations);
+            document.getElementById('size-filter').addEventListener('change', filterRegistrations);
+        }
+
+        function handleEventSelection(e) {
+            formData.eventType = e.target.value;
+            document.getElementById('next-step-1').disabled = false;
+            
+            // Update event option styling
+            document.querySelectorAll('.event-option').forEach(label => {
+                label.classList.remove('border-primary', 'bg-primary/5');
+                label.classList.add('border-gray-200');
+            });
+            
+            e.target.closest('.event-option').classList.remove('border-gray-200');
+            e.target.closest('.event-option').classList.add('border-primary', 'bg-primary/5');
+            
+            generatePricingOptions();
+        }
+
+        function generatePricingOptions() {
+            const pricingGrid = document.getElementById('pricing-grid');
+            pricingGrid.innerHTML = '';
+            
+            if (!formData.eventType) return;
+            
+            for (let size = 1; size <= 4; size++) {
+                const price = pricing[formData.eventType][size];
+                const option = document.createElement('label');
+                option.className = 'size-option block p-4 rounded-lg border-2 border-gray-200 cursor-pointer hover:border-primary transition-all duration-200';
+                option.innerHTML = `
+                    <input type="radio" name="teamSize" value="${size}" class="sr-only">
+                    <div class="text-center">
+                        <h4 class="font-semibold text-gray-900">${size} Member${size > 1 ? 's' : ''}</h4>
+                        <p class="text-lg font-bold text-primary">₹${price}</p>
+                    </div>
+                `;
+                
+                option.querySelector('input').addEventListener('change', handleTeamSizeSelection);
+                pricingGrid.appendChild(option);
+            }
+        }
+
+        function handleTeamSizeSelection(e) {
+            formData.teamSize = parseInt(e.target.value);
+            document.getElementById('next-step-2').disabled = false;
+            
+            // Update size option styling
+            document.querySelectorAll('.size-option').forEach(label => {
+                label.classList.remove('border-primary', 'bg-primary/5');
+                label.classList.add('border-gray-200');
+            });
+            
+            e.target.closest('.size-option').classList.remove('border-gray-200');
+            e.target.closest('.size-option').classList.add('border-primary', 'bg-primary/5');
+            
+            generateTeamMemberFields();
+            updatePaymentInfo();
+        }
+
+        function generateTeamMemberFields() {
+            const teamMembersContainer = document.getElementById('team-members');
+            teamMembersContainer.innerHTML = '<h5 class="font-medium text-gray-900">Team Members</h5>';
+            
+            for (let i = 1; i <= formData.teamSize; i++) {
+                const memberDiv = document.createElement('div');
+                memberDiv.className = 'grid sm:grid-cols-2 gap-4';
+                memberDiv.innerHTML = `
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            ${i === 1 ? 'Team Lead Name' : `Member ${i} Name`} *
+                        </label>
+                        <input type="text" name="member${i}Name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Enter member name" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            ${i === 1 ? 'Team Lead Email' : `Member ${i} Email`} *
+                        </label>
+                        <input type="email" name="member${i}Email" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Enter email address" required>
+                    </div>
+                `;
+                teamMembersContainer.appendChild(memberDiv);
+            }
+        }
+
+        function updatePaymentInfo() {
+            if (formData.eventType && formData.teamSize) {
+                const amount = pricing[formData.eventType][formData.teamSize];
+                document.getElementById('total-amount').textContent = `₹${amount}`;
+                document.getElementById('event-details').textContent = 
+                    `${formatEventName(formData.eventType)} - ${formData.teamSize} Member${formData.teamSize > 1 ? 's' : ''}`;
+            }
+        }
+
+        function formatEventName(eventType) {
+            switch (eventType) {
+                case 'hackathon': return 'Hackathon';
+                case 'coding': return 'Coding Competition';
+                case 'combo': return 'Combo Pass';
+                default: return eventType;
+            }
+        }
+
+        function goToStep(step) {
+            // Hide all steps
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById(`step-${i}`).classList.add('hidden');
+            }
+            
+            // Show current step
+            document.getElementById(`step-${step}`).classList.remove('hidden');
+            
+            // Update step indicators
+            updateStepIndicators(step);
+            
+            currentStep = step;
+        }
+
+        function updateStepIndicators(activeStep) {
+            const indicators = document.querySelectorAll('.step-indicator');
+            indicators.forEach((indicator, index) => {
+                const stepNumber = index + 1;
+                const circle = indicator.querySelector('div');
+                
+                if (stepNumber <= activeStep) {
+                    circle.className = 'w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center font-semibold';
+                    indicator.classList.add('active');
+                } else {
+                    circle.className = 'w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-semibold';
+                    indicator.classList.remove('active');
+                }
+            });
+        }
+
+        function handleFormSubmission(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const formDataObj = new FormData(form);
+            
+            // Collect team members
+            const members = [];
+            for (let i = 1; i <= formData.teamSize; i++) {
+                const name = formDataObj.get(`member${i}Name`);
+                const email = formDataObj.get(`member${i}Email`);
+                if (name && email) {
+                    members.push({ name, email });
+                }
+            }
+            
+            const registration = {
+                id: Date.now().toString(),
+                teamName: formDataObj.get('teamName'),
+                eventType: formData.eventType,
+                teamSize: formData.teamSize,
+                teamLeadPhone: formDataObj.get('teamLeadPhone'),
+                transactionId: formDataObj.get('transactionId'),
+                amount: pricing[formData.eventType][formData.teamSize],
+                members: members,
+                status: 'confirmed',
+                createdAt: new Date().toISOString()
+            };
+            
+            // Save to local storage (simulating backend)
+            registrations.push(registration);
+            saveLocalData();
+            
+            // Show success modal
+            showSuccessModal();
+            
+            // Reset form
+            resetForm();
+        }
+
+        function showSuccessModal() {
+            document.getElementById('success-modal').classList.add('show');
+        }
+
+        function hideSuccessModal() {
+            document.getElementById('success-modal').classList.remove('show');
+        }
+
+        function resetForm() {
+            document.getElementById('registration-form').reset();
+            formData = {};
+            currentStep = 1;
+            goToStep(1);
+            document.getElementById('next-step-1').disabled = true;
+            document.getElementById('next-step-2').disabled = true;
+        }
+
+        function showAdminLoginModal() {
+            document.getElementById('admin-login-modal').classList.add('show');
+        }
+
+        function hideAdminLoginModal() {
+            document.getElementById('admin-login-modal').classList.remove('show');
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const username = formData.get('username');
+            const password = formData.get('password');
+            
+            // Simple authentication (in real app, this would be backend verification)
+            if (username === 'admin' && password === 'techmania2025') {
+                isAdminLoggedIn = true;
+                hideAdminLoginModal();
+                showAdminDashboard();
+                showToast('Login successful', 'success');
+            } else {
+                showToast('Invalid credentials. Please try again.', 'error');
+            }
+        }
+
+        function handleLogout() {
+            isAdminLoggedIn = false;
+            showMainContent();
+            showToast('Logged out successfully', 'success');
+        }
+
+        function showAdminDashboard() {
+            document.getElementById('main-content').classList.add('hidden');
+            document.getElementById('admin-dashboard').classList.remove('hidden');
+            loadAdminData();
+        }
+
+        function showMainContent() {
+            document.getElementById('admin-dashboard').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+        }
+
+        function loadAdminData() {
+            updateAdminStats();
+            displayRegistrations();
+        }
+
+        function updateAdminStats() {
+            const stats = {
+                total: registrations.length,
+                hackathon: registrations.filter(r => r.eventType === 'hackathon').length,
+                coding: registrations.filter(r => r.eventType === 'coding').length,
+                combo: registrations.filter(r => r.eventType === 'combo').length
+            };
+            
+            document.getElementById('total-teams').textContent = stats.total;
+            document.getElementById('hackathon-count').textContent = stats.hackathon;
+            document.getElementById('coding-count').textContent = stats.coding;
+            document.getElementById('combo-count').textContent = stats.combo;
+        }
+
+        function displayRegistrations(filteredRegistrations = null) {
+            const tableBody = document.getElementById('registrations-table');
+            const regsToShow = filteredRegistrations || registrations;
+            
+            if (regsToShow.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                            No registrations found
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tableBody.innerHTML = regsToShow.map(reg => `
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div>
+                            <div class="text-sm font-medium text-gray-900">${reg.teamName}</div>
+                            <div class="text-sm text-gray-500">${new Date(reg.createdAt).toLocaleDateString()}</div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full ${getEventBadgeClass(reg.eventType)}">
+                            ${formatEventName(reg.eventType)}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${reg.teamSize} member${reg.teamSize > 1 ? 's' : ''}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${reg.members[0]?.name || 'N/A'}</div>
+                        <div class="text-sm text-gray-500">${reg.teamLeadPhone}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        ₹${reg.amount}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${reg.transactionId}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                            ${reg.status}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function getEventBadgeClass(eventType) {
+            switch (eventType) {
+                case 'hackathon': return 'bg-blue-100 text-blue-800';
+                case 'coding': return 'bg-purple-100 text-purple-800';
+                case 'combo': return 'bg-green-100 text-green-800';
+                default: return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function filterRegistrations() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const eventFilter = document.getElementById('event-filter').value;
+            const sizeFilter = document.getElementById('size-filter').value;
+            
+            let filtered = registrations;
+            
+            if (searchTerm) {
+                filtered = filtered.filter(reg => 
+                    reg.teamName.toLowerCase().includes(searchTerm) ||
+                    reg.transactionId.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            if (eventFilter !== 'all') {
+                filtered = filtered.filter(reg => reg.eventType === eventFilter);
+            }
+            
+            if (sizeFilter !== 'all') {
+                filtered = filtered.filter(reg => reg.teamSize === parseInt(sizeFilter));
+            }
+            
+            displayRegistrations(filtered);
+        }
+
+        function showToast(message, type = 'success') {
+            const toastContainer = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            
+            toastContainer.appendChild(toast);
+            
+            // Show toast
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // Hide and remove toast
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toastContainer.removeChild(toast), 300);
+            }, 3000);
+        }
+
+        function saveLocalData() {
+            localStorage.setItem('techmania-registrations', JSON.stringify(registrations));
+        }
+
+        function loadLocalData() {
+            const saved = localStorage.getItem('techmania-registrations');
+            if (saved) {
+                registrations = JSON.parse(saved);
+            }
+        }
+    </script>
+</body>
+</html>
